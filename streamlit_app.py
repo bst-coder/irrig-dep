@@ -4,9 +4,16 @@ import json
 import time
 import pandas as pd
 from datetime import datetime, timezone
-import plotly.graph_objects as go
-import plotly.express as px
 from typing import Dict, List
+
+# Try to import plotly, fallback to basic charts if not available
+try:
+    import plotly.graph_objects as go
+    import plotly.express as px
+    PLOTLY_AVAILABLE = True
+except ImportError:
+    PLOTLY_AVAILABLE = False
+    st.warning("Plotly not available. Using basic charts.")
 
 # Page configuration
 st.set_page_config(
@@ -43,21 +50,47 @@ st.markdown("""
 
 class ESP32Dashboard:
     def __init__(self):
-        self.api_base = st.secrets.get("API_BASE_URL", "http://localhost:3000")
+        # Try to get API URL from secrets, fallback to demo mode
+        try:
+            self.api_base = st.secrets.get("API_BASE_URL", "http://localhost:8000")
+        except:
+            self.api_base = "http://localhost:8000"  # Default for demo
         
     def get_devices(self):
         """Fetch devices from API"""
         try:
-            response = requests.get(f"{self.api_base}/api/devices", timeout=10)
+            response = requests.get(f"{self.api_base}/api/devices", timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 return data.get('devices', [])
             else:
                 st.error(f"API Error: {response.status_code}")
-                return []
+                return self.get_demo_devices()
         except Exception as e:
-            st.error(f"Connection Error: {e}")
-            return []
+            st.warning(f"API not available: {e}")
+            st.info("Showing demo data. Deploy the backend API to see real data.")
+            return self.get_demo_devices()
+    
+    def get_demo_devices(self):
+        """Return demo devices when API is not available"""
+        return [
+            {
+                "deviceId": "esp32-demo",
+                "isOnline": True,
+                "sensors": {"humidity": 25.5, "temperature": 24.0, "pressure": 1013.2},
+                "zoneStatus": {"zone1": "irrigating", "zone2": "idle"},
+                "states": {"pump": "on", "valve": "open"},
+                "timestamp": datetime.now().isoformat()
+            },
+            {
+                "deviceId": "esp32-demo-2",
+                "isOnline": False,
+                "sensors": {"humidity": 45.0, "temperature": 22.0, "pressure": 1015.0},
+                "zoneStatus": {"zone1": "idle", "zone2": "idle"},
+                "states": {"pump": "off", "valve": "closed"},
+                "timestamp": (datetime.now()).isoformat()
+            }
+        ]
     
     def send_command(self, device_id: str, action: str, command: str = None):
         """Send command to device"""
@@ -72,7 +105,7 @@ class ESP32Dashboard:
             response = requests.post(
                 f"{self.api_base}/api/esp32",
                 json=payload,
-                timeout=10
+                timeout=5
             )
             
             if response.status_code == 200:
@@ -82,7 +115,8 @@ class ESP32Dashboard:
                 st.error(f"Command failed: {response.status_code}")
                 return False
         except Exception as e:
-            st.error(f"Command error: {e}")
+            st.warning(f"Command not sent (demo mode): {action}")
+            st.info("Deploy the backend API to enable real device control.")
             return False
 
 def main():
@@ -176,16 +210,25 @@ def main():
                 st.metric("Pressure", f"{pressure} hPa")
                 
                 # Sensor chart
-                sensor_data = pd.DataFrame({
-                    'Sensor': ['Humidity', 'Temperature', 'Pressure'],
-                    'Value': [humidity, temperature/100*50, pressure/1000*50],  # Normalized for display
-                    'Actual': [f"{humidity}%", f"{temperature}°C", f"{pressure} hPa"]
-                })
-                
-                fig = px.bar(sensor_data, x='Sensor', y='Value', 
-                           hover_data=['Actual'], title="Sensor Readings")
-                fig.update_layout(height=300)
-                st.plotly_chart(fig, use_container_width=True)
+                if PLOTLY_AVAILABLE:
+                    sensor_data = pd.DataFrame({
+                        'Sensor': ['Humidity', 'Temperature', 'Pressure'],
+                        'Value': [humidity, temperature/100*50, pressure/1000*50],  # Normalized for display
+                        'Actual': [f"{humidity}%", f"{temperature}°C", f"{pressure} hPa"]
+                    })
+                    
+                    fig = px.bar(sensor_data, x='Sensor', y='Value', 
+                               hover_data=['Actual'], title="Sensor Readings")
+                    fig.update_layout(height=300)
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    # Fallback to simple bar chart
+                    chart_data = pd.DataFrame({
+                        'Humidity': [humidity],
+                        'Temperature': [temperature],
+                        'Pressure': [pressure/10]  # Scale down for display
+                    })
+                    st.bar_chart(chart_data)
             
             # Zone control
             with col2:
