@@ -4,31 +4,45 @@ A complete IoT irrigation system with real-time monitoring, AI-powered decision 
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
-```bash
-npm install
-pip install requests
-```
+### Local Development
 
-### 2. Configure Environment
-Create `.env.local`:
-```env
-MONGODB_URI=mongodb://localhost:27017/irrigation-system
-JWT_SECRET=your_jwt_secret_change_this_in_production
-NODE_ENV=development
-```
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements_streamlit.txt
+   pip install -r requirements_api.txt
+   ```
 
-### 3. Start the System
-```bash
-# Terminal 1: Start server
-npm run dev
+2. **Start FastAPI Backend**:
+   ```bash
+   uvicorn api_server:app --reload
+   ```
 
-# Terminal 2: Start ESP32 simulator
-python scripts/esp32-simulator.py
-```
+3. **Start Streamlit Dashboard**:
+   ```bash
+   streamlit run streamlit_app.py
+   ```
 
-### 4. Open Dashboard
-Navigate to: http://localhost:3000
+4. **Start ESP32 Simulator**:
+   ```bash
+   python scripts/esp32-simulator.py
+   ```
+
+### ☁️ Cloud Deployment
+
+Deploy on **Streamlit Cloud** with **MongoDB Atlas**:
+
+1. **Setup Database**: Create MongoDB Atlas cluster
+2. **Deploy API**: Deploy `api_server.py` on Heroku/Railway  
+3. **Deploy Dashboard**: Deploy on Streamlit Cloud
+4. **Configure**: Set environment variables
+
+**📋 Detailed deployment guide**: See `DEPLOYMENT_GUIDE.md`
+
+### Streamlit Cloud Deployment Form:
+- **Repository**: `https://github.com/yourusername/your-repo`
+- **Branch**: `main`
+- **Main file path**: `streamlit_app.py`
+- **App URL**: `your-irrigation-dashboard.streamlit.app`
 
 ## 🎮 Using the ESP32 Simulator
 

@@ -9,6 +9,7 @@ import json
 import time
 import random
 import threading
+import os
 from datetime import datetime, timezone
 from typing import Dict
 import logging
@@ -18,8 +19,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class ESP32Simulator:
-    def __init__(self, device_id: str = "esp32-main", server_url: str = "http://localhost:3000"):
+    def __init__(self, device_id: str = "esp32-main", server_url: str = None):
         self.device_id = device_id
+        # Default to local development, but can be overridden for production
+        if server_url is None:
+            server_url = os.getenv("API_BASE_URL", "http://localhost:8000")
         self.server_url = server_url.rstrip('/')
         self.jwt_token = None
         self.is_online = True
