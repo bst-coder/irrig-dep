@@ -1,0 +1,8 @@
+
+{
+    "baseUrl": "http://localhost:3000/api/devices",
+    "syncInterval": 10,
+    "logLevel": "INFO",
+    "deviceId": "esp32-001",
+    "logFile": "esp32_simulator.log"
+}
