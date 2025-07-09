@@ -20,8 +20,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Environment variables
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/irrigation-system")
-JWT_SECRET = os.getenv("JWT_SECRET", "your_jwt_secret_change_this_in_production")
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://bst-coder:1amine@BST@cluster0.3tcrszs.mongodb.net/")
+JWT_SECRET = os.getenv("JWT_SECRET", "9ca4f51e52993c05b3c3429ab71baf1dab5d0b36a461b0000db8022010090e66")
 
 # FastAPI app
 app = FastAPI(
